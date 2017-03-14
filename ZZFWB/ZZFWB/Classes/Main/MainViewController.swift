@@ -13,10 +13,46 @@ class MainViewController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        addChildViewController("HomeViewController", title: "首页", imageName: "tabbar_home")
-        addChildViewController("MessageViewController", title: "消息", imageName: "tabbar_message_center")
-        addChildViewController("DiscoverViewController", title: "发现", imageName: "tabbar_discover")
-        addChildViewController("ProfileViewController", title: "我", imageName: "tabbar_profile")
+        // 1. 获取json文件的路径
+        guard let jsonPath = NSBundle.mainBundle().pathForResource("MainVCSettings.json", ofType: nil) else {
+            print("没有获取到对应的文件资源")
+            return
+        }
+        
+        // 2. 读取json文件中的内容
+        guard let jsonData = NSData(contentsOfFile: jsonPath) else {
+            print("没有获取到json文件中的数据")
+            return
+        }
+        
+        // 3. 将data转成数组
+        guard let anyObject = try? NSJSONSerialization.JSONObjectWithData(jsonData, options: .MutableContainers) else {
+            return
+        }
+        
+        guard let dictArray = anyObject as? [[String : AnyObject]] else {
+            return
+        }
+        
+        // 遍历字典,获取信息
+        for dict in dictArray {
+            // 4.1 获取控制器对应的字符串
+            guard let vcName = dict["vcName"] as? String else {
+                continue
+            }
+            // 4.2 获取控制器显示的title
+            guard let title = dict["title"] as? String else {
+                continue
+            }
+            
+            // 4.3 获取控制器显示的图标名称
+            guard let imageName = dict["imageName"] as? String else {
+                continue
+            }
+            
+            // 4.4 添加子控制器
+            addChildViewController(vcName, title: title, imageName: imageName)
+        }
     }
     
     // swift支持方法的重载
